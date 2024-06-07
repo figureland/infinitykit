@@ -18,7 +18,8 @@
     "prepare": "husky",
     "lint": "eslint src/",
     "format": "prettier --write src/",
-    "release": "bunx changelogen@latest --release"
+    "release": "bunx changelogen@latest --release",
+    "size": "bunx size-limit"
   },
   "files": [
     "dist"
@@ -27,6 +28,7 @@
   "devDependencies": {
     "@commitlint/cli": "^19.2.1",
     "@commitlint/config-conventional": "^19.1.0",
+    "@size-limit/preset-small-lib": "^11.1.2",
     "@types/bun": "^1.0.0",
     "bun-plugin-dts": "^0.2.1",
     "eslint": "^9.0.0",
@@ -73,5 +75,10 @@
     "@figureland/toolkit": "0.0.71",
     "@figureland/typekit": "^0.0.29",
     "superjson": "^2.2.1"
-  }
+  },
+  "size-limit": [
+    {
+      "path": "dist/index.js"
+    }
+  ]
 }

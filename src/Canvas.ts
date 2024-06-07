@@ -1,4 +1,4 @@
-import { abs, clamp, min, round } from '@figureland/mathkit/number'
+import { abs, clamp, dp, min, round } from '@figureland/mathkit/number'
 import {
   copy,
   getScale,
@@ -18,9 +18,16 @@ import {
   negate,
   isVector2,
   transform,
-  add
+  add,
+  preciseEnough as preciseEnoughVec2
 } from '@figureland/mathkit/vector2'
-import { box, type Box, boxCenter, isBox } from '@figureland/mathkit/box'
+import {
+  box,
+  type Box,
+  boxCenter,
+  isBox,
+  preciseEnough as preciseEnoughBox
+} from '@figureland/mathkit/box'
 import { signal, readonly, type PersistenceName, persist, Manager } from '@figureland/statekit'
 import { typedLocalStorage } from '@figureland/statekit/typed-local-storage'
 import { DEFAULT_CANVAS_OPTIONS } from './constants'
@@ -214,7 +221,9 @@ export class Canvas extends Manager {
     item.x -= viewport.x
     item.y -= viewport.y
 
-    const result: Vector2 & Partial<Box> = transform(vector2(), item, invTransform)
+    const result: Vector2 & Partial<Box> = preciseEnoughVec2(
+      transform(vector2(), item, invTransform)
+    )
 
     if (isBox(item)) {
       const v = vector2()
@@ -223,8 +232,12 @@ export class Canvas extends Manager {
         add(v, v, vector2(item.x + item.width, item.y + item.height)),
         invTransform
       )
-      result.width = transformedDim.x - result.x
-      result.height = transformedDim.y - result.y
+      return preciseEnoughBox({
+        x: result.x,
+        y: result.y,
+        width: dp(transformedDim.x - result.x),
+        height: dp(transformedDim.y - result.y)
+      }) as T
     }
 
     return result as T
@@ -236,13 +249,16 @@ export class Canvas extends Manager {
     const result: Vector2 & Partial<Box> = transform(vector2(), item, this.transform.get())
 
     if (isBox(item)) {
-      const transformedDim = transform(
-        vector2(),
-        vector2(item.x + item.width, item.y + item.height),
-        current
+      const transformedDim = preciseEnoughVec2(
+        transform(vector2(), vector2(item.x + item.width, item.y + item.height), current)
       )
-      result.width = transformedDim.x - result.x
-      result.height = transformedDim.y - result.y
+
+      return preciseEnoughBox({
+        x: result.x,
+        y: result.y,
+        width: dp(transformedDim.x - result.x),
+        height: dp(transformedDim.y - result.y)
+      }) as T
     }
 
     return result as T
