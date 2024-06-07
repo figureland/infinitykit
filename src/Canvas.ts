@@ -24,6 +24,7 @@ import { signal, readonly, type PersistenceName, persist, Manager } from '@figur
 import { typedLocalStorage } from '@figureland/statekit/typed-local-storage'
 import { DEFAULT_CANVAS_OPTIONS } from './constants'
 import type { BackgroundPatternType } from './schema/background.schema'
+import { roundMatrix } from './utils/number'
 
 export type CanvasState = {
   loaded: boolean
@@ -94,6 +95,7 @@ export class Canvas extends Manager {
       scale(newMatrix, newMatrix, newScale)
       translate(newMatrix, newMatrix, negate(vector2(), point))
       multiply(newMatrix, existingMatrix, newMatrix)
+      roundMatrix(newMatrix)
       copy(existingMatrix, newMatrix)
     })
   }

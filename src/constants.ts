@@ -1,4 +1,4 @@
-import { CanvasOptions } from './Canvas'
+import type { CanvasOptions } from './Canvas'
 
 export const DEFAULT_CANVAS_OPTIONS = {
   background: 'dots',
