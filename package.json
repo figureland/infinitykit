@@ -1,22 +1,17 @@
 {
-  "name": "@figureland/base",
+  "name": "@figureland/infinitykit",
   "version": "0.0.0",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "type": "module",
+  "description": "A modular Typescript toolkit for building minimal infinite canvas apps",
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
       "require": "./dist/index.js",
       "import": "./dist/index.js"
-    },
-    "./entry": {
-      "types": "./dist/entry.d.ts",
-      "require": "./dist/entry.js",
-      "import": "./dist/entry.js"
     }
   },
-  "description": "Base template for Figure Typescript projects",
   "scripts": {
     "build": "bun run scripts/build.ts",
     "dev": "bun --watch scripts/dev.ts",
@@ -42,11 +37,42 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/figureland/base.git"
+    "url": "git+https://github.com/figureland/infinitykit.git"
   },
   "author": "Figure Systems",
   "bugs": {
-    "url": "https://github.com/figureland/base"
+    "url": "https://github.com/figureland/infinitykit"
   },
-  "homepage": "https://github.com/figureland/base#readme"
+  "homepage": "https://github.com/figureland/infinitykit#readme",
+  "peerDependencies": {
+    "@figureland/mathkit": ">=0.0.35",
+    "@figureland/statekit": ">=0.0.113",
+    "@figureland/toolkit": ">=0.0.67",
+    "@figureland/typekit": ">=0.0.29",
+    "superjson": "^2.2.1"
+  },
+  "peerDependenciesMeta": {
+    "@figureland/mathkit": {
+      "optional": false
+    },
+    "@figureland/statekit": {
+      "optional": false
+    },
+    "@figureland/toolkit": {
+      "optional": false
+    },
+    "@figureland/typekit": {
+      "optional": false
+    },
+    "superjson": {
+      "optional": true
+    }
+  },
+  "dependencies": {
+    "@figureland/mathkit": "^0.0.35",
+    "@figureland/statekit": "^0.0.113",
+    "@figureland/toolkit": "^0.0.67",
+    "@figureland/typekit": "^0.0.29",
+    "superjson": "^2.2.1"
+  }
 }

@@ -5,9 +5,7 @@ on:
     tags:
       - 'v*'
 
-permissions:
-  id-token: write
-  contents: write
+permissions: write-all
 
 jobs:
   release:
@@ -43,6 +41,8 @@ jobs:
           scope: '@figureland'
 
       - name: Publish to npmjs.com
-        run: npm publish --access public
+        run: npm publish --provenance --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+          
