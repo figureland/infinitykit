@@ -7,6 +7,7 @@ import {
   isMatrix2D,
   matrix2D,
   multiply,
+  preciseEnough,
   scale,
   translate
 } from '@figureland/mathkit/matrix2D'
@@ -16,7 +17,7 @@ import {
   scale as scaleVec2,
   negate,
   isVector2,
-  transformMatrix2D,
+  transform,
   add
 } from '@figureland/mathkit/vector2'
 import { box, type Box, boxCenter, isBox } from '@figureland/mathkit/box'
@@ -24,7 +25,6 @@ import { signal, readonly, type PersistenceName, persist, Manager } from '@figur
 import { typedLocalStorage } from '@figureland/statekit/typed-local-storage'
 import { DEFAULT_CANVAS_OPTIONS } from './constants'
 import type { BackgroundPatternType } from './schema/background.schema'
-import { roundMatrix } from './utils/number'
 
 export type CanvasState = {
   loaded: boolean
@@ -95,7 +95,7 @@ export class Canvas extends Manager {
       scale(newMatrix, newMatrix, newScale)
       translate(newMatrix, newMatrix, negate(vector2(), point))
       multiply(newMatrix, existingMatrix, newMatrix)
-      roundMatrix(newMatrix)
+      preciseEnough(newMatrix)
       copy(existingMatrix, newMatrix)
     })
   }
@@ -214,11 +214,11 @@ export class Canvas extends Manager {
     item.x -= viewport.x
     item.y -= viewport.y
 
-    const result: Vector2 & Partial<Box> = transformMatrix2D(vector2(), item, invTransform)
+    const result: Vector2 & Partial<Box> = transform(vector2(), item, invTransform)
 
     if (isBox(item)) {
       const v = vector2()
-      const transformedDim = transformMatrix2D(
+      const transformedDim = transform(
         v,
         add(v, v, vector2(item.x + item.width, item.y + item.height)),
         invTransform
@@ -231,15 +231,15 @@ export class Canvas extends Manager {
   }
 
   public canvasToScreen = <T extends Vector2 | Box>(item: T): T => {
-    const transform = this.transform.get()
+    const current = this.transform.get()
 
-    const result: Vector2 & Partial<Box> = transformMatrix2D(vector2(), item, this.transform.get())
+    const result: Vector2 & Partial<Box> = transform(vector2(), item, this.transform.get())
 
     if (isBox(item)) {
-      const transformedDim = transformMatrix2D(
+      const transformedDim = transform(
         vector2(),
         vector2(item.x + item.width, item.y + item.height),
-        transform
+        current
       )
       result.width = transformedDim.x - result.x
       result.height = transformedDim.y - result.y
