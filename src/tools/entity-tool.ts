@@ -1,16 +1,25 @@
+import { system } from '@figureland/statekit'
 import type { InfinityKit } from '../InfinityKit'
 import type { Tool } from './Tool'
 
-export const entityTool: Tool<InfinityKit> = () => {
+export const entityTool = <I extends InfinityKit>(): Tool<I> => {
+  const { dispose } = system()
+
   return {
-    name: 'entity',
-    title: 'Add node',
-    icon: 'entity',
-    onPointerDown: (kit, p) => {},
-    onPointerMove: (kit, p) => {},
-    onPointerUp: (kit, p) => {},
-    onWheel: (kit, p) => {},
-    onSelect: (kit) => {},
-    onDeselect: (kit) => {}
+    dispose,
+    meta: {
+      title: 'Add node',
+      icon: 'entity'
+    },
+    onPointerDown: async (kit, p) => {},
+    onPointerMove: async (kit, p) => {},
+    onPointerUp: async (kit, p) => {},
+    onWheel: async (kit, p) => {},
+    onSelect: async () => {
+      console.log('enter entity')
+    },
+    onDeselect: async () => {
+      console.log('exit entity')
+    }
   }
 }

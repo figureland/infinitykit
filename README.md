@@ -7,6 +7,8 @@ The aim of this project is to provide a highly modular box of primitives that yo
 
 While size wasn't the main priority, **infinitykit** is pretty small. It checks in at **5.37 kB** all in, minified and brotlied. It's written from scratch using only [figure](https://github.com/figureland) dependencies. For now, [SuperJSON](https://github.com/blitz-js/superjson) is also optionally a peer dependency, although the hope is that will be removed and replaced with something custom and more minimal in the future. You'll need that if you want to persist your canvas data to local storage.
 
+If you want to build an amazing whiteboard or node/edge diagramming tool, head over to [tldraw](https://github.com/tldraw/tldraw) and [xyflow](https://github.com/xyflow/xyflow). Those projects are like the Volvo to **infinitykit**'s kit car project.
+
 ### Thinking
 
 - This library is 'headless' meaning it doesn't make any assumptions about how or where you want to render your canvas. This comes from the frustration of working with popular React ecosystem components that had fallen out of date and into disrepair, but still had a great quality implementation if you peel back the layers of framework code. I found myself having to update whatever styling system that project used that has since gone out of fashion.

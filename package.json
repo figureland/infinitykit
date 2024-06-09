@@ -48,7 +48,8 @@
   "homepage": "https://github.com/figureland/infinitykit#readme",
   "peerDependencies": {
     "@figureland/mathkit": ">=0.0.37",
-    "@figureland/statekit": ">=0.0.115",
+    "@figureland/statekit": ">=0.0.117",
+    "@figureland/toolkit": "0.0.72",
     "@figureland/typekit": ">=0.0.29",
     "superjson": "^2.2.1"
   },
@@ -71,8 +72,8 @@
   },
   "dependencies": {
     "@figureland/mathkit": "^0.0.37",
-    "@figureland/statekit": "0.0.116",
-    "@figureland/toolkit": "0.0.71",
+    "@figureland/statekit": "0.0.117",
+    "@figureland/toolkit": "0.0.72",
     "@figureland/typekit": "^0.0.29",
     "superjson": "^2.2.1"
   },

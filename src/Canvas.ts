@@ -183,7 +183,11 @@ export class Canvas extends Manager {
 
   public move = (delta: Vector2): void => {
     this.transform.mutate((matrix) => {
-      translate(matrix, matrix, scaleVec2(vector2(), delta, 1 / this.scale.get()))
+      translate(
+        matrix,
+        matrix,
+        preciseEnoughVec2(scaleVec2(vector2(), delta, 1 / this.scale.get()))
+      )
     })
   }
 

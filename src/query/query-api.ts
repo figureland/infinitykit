@@ -1,10 +1,10 @@
-import type { Events, Disposable, Signal } from '@figureland/statekit'
+import type { Disposable, Signal } from '@figureland/statekit'
 import type { Box } from '@figureland/mathkit/box'
 import type { Vector2 } from '@figureland/mathkit/box'
 
 export type QueryIdentifier = string | number | symbol
 
-export type Query<ID extends string = any, Item = any> = {
+export type Query<ID extends string = string, Item = any> = {
   queryID: QueryIdentifier
   params: QueryParams<ID, Item>
   result: ID[]
@@ -18,7 +18,6 @@ export type QueryParams<ID extends string, Item> = {
 }
 
 export type QueryAPI<ID extends string = any, Item = any> = Disposable & {
-  readonly queue: Events<Record<QueryIdentifier, ID[]>>
   readonly processing: Signal<boolean>
   add: (id: ID, item: Item) => void
   update: (id: ID, item: Item) => void

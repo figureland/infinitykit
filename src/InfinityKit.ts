@@ -1,10 +1,11 @@
-import { type Signal, signal, Manager } from '@figureland/statekit'
+import { type Signal, signal, Manager, type ReadonlySignal } from '@figureland/statekit'
+import { values } from '@figureland/typekit/object'
 import type { PointerState } from '@figureland/toolkit'
-import type { Box, Vector2 } from '@figureland/mathkit/box'
+import { box, type Box, type Vector2 } from '@figureland/mathkit/box'
 import { type CanvasOptions, Canvas } from './Canvas'
 import type { PersistenceName } from '@figureland/statekit/typed-local-storage'
 import type { InferQueryID, QueryAPI } from './query/query-api'
-import { type DefaultTools, defaultTools } from './default-tools'
+import { defaultTools, type DefaultToolset } from './default-tools'
 
 export type IKActionType = {
   type: string
@@ -38,15 +39,18 @@ export type IKActions =
     }
 
 export type IKState<ID extends string = string> = {
+  focus: boolean
   selection: ID[]
+  brush: Box
 }
 
 export class InfinityKit<API extends QueryAPI = QueryAPI> extends Manager {
   public readonly canvas: Canvas
-  public tools: Signal<DefaultTools>
-  public tool: Signal<keyof DefaultTools>
+  public tools: Signal<DefaultToolset>
+  public tool: Signal<keyof DefaultToolset>
   public state: Signal<IKState>
   public visible: Signal<InferQueryID<API>[]>
+  public selection: Signal<InferQueryID<API>[]>
 
   constructor(
     public api: API,
@@ -59,10 +63,18 @@ export class InfinityKit<API extends QueryAPI = QueryAPI> extends Manager {
     } = {}
   ) {
     super()
-    this.tool = this.use(signal<keyof DefaultTools>(() => 'select'))
+    this.tool = this.use(signal<keyof DefaultToolset>(() => 'select'))
     this.tools = this.use(signal(() => defaultTools))
+    this.use(() => {
+      values(this.tools.get()).forEach((tool) => {
+        tool.dispose()
+      })
+    })
+
     this.state = this.use(
       signal<IKState>(() => ({
+        brush: box(),
+        focus: false,
         selection: []
       }))
     )
@@ -81,9 +93,18 @@ export class InfinityKit<API extends QueryAPI = QueryAPI> extends Manager {
         }))
       )
     )
+
+    this.selection = this.use(
+      api.signalQuery(
+        Symbol(),
+        signal((get) => ({
+          target: get(this.state).brush
+        }))
+      )
+    )
   }
 
-  public setTool = (tool: keyof DefaultTools) => {
+  public setTool = (tool: keyof DefaultToolset) => {
     if (tool !== this.tool.get()) {
       this.onDeselect()
       this.tool.set(tool)
@@ -93,9 +114,18 @@ export class InfinityKit<API extends QueryAPI = QueryAPI> extends Manager {
 
   public getActiveTool = () => this.tools.get()[this.tool.get()]
 
-  public onFocus = () => {}
+  public onFocus = () => {
+    this.state.set({
+      focus: true
+    })
+    console.log('focus')
+  }
 
-  public onBlur = () => {}
+  public onBlur = () => {
+    this.state.set({
+      focus: false
+    })
+  }
 
   public wheel: Canvas['wheel'] = (point, delta) => {
     this.canvas.wheel(point, delta)
@@ -103,44 +133,47 @@ export class InfinityKit<API extends QueryAPI = QueryAPI> extends Manager {
 
   public onPointerDown = (p: PointerState) => {
     const action = this.getActiveTool().onPointerDown?.(this, p)
-    if (action) {
-      this.handleToolAction(action)
-    }
+    // if (action) {
+    //   this.handleToolAction(action)
+    // }
   }
 
   public onPointerMove = (p: PointerState) => {
-    const action = this.getActiveTool().onPointerMove?.(this, p)
-    if (action) {
-      this.handleToolAction(action)
+    if (!this.state.get().focus) {
+      return
     }
+    const action = this.getActiveTool().onPointerMove?.(this, p)
+    // if (action) {
+    //   this.handleToolAction(action)
+    // }
   }
 
   public onPointerUp = (p: PointerState) => {
     const action = this.getActiveTool().onPointerUp?.(this, p)
-    if (action) {
-      this.handleToolAction(action)
-    }
+    // if (action) {
+    //   this.handleToolAction(action)
+    // }
   }
 
   public onWheel = (p: PointerState) => {
     const action = this.getActiveTool().onWheel?.(this, p)
-    if (action) {
-      this.handleToolAction(action)
-    }
+    // if (action) {
+    //   this.handleToolAction(action)
+    // }
   }
 
   public onSelect = () => {
     const action = this.getActiveTool().onSelect?.(this)
-    if (action) {
-      this.handleToolAction(action)
-    }
+    // if (action) {
+    //   this.handleToolAction(action)
+    // }
   }
 
   public onDeselect = () => {
     const action = this.getActiveTool().onDeselect?.(this)
-    if (action) {
-      this.handleToolAction(action)
-    }
+    // if (action) {
+    //   this.handleToolAction(action)
+    // }
   }
 
   public handleToolAction = (action: IKActions) => {
@@ -168,29 +201,3 @@ export class InfinityKit<API extends QueryAPI = QueryAPI> extends Manager {
     }
   }
 }
-
-// type CanvasManagerState<ID extends string = string> = {
-//   selection: ID[]
-// }
-
-// type CanvasManagerConstructor = {
-//   initialCanvasState?: Partial<CanvasOptions>
-//   persistence?: PersistenceName
-// }
-
-// export class CanvasManager<API extends QueryAPI> extends BaseCanvasManager<typeof defaultTools> {
-//   constructor(
-//     private api: API,
-//     { persistence, initialCanvasState }: CanvasManagerConstructor
-//   ) {
-//     super({
-//       tools: defaultTools,
-//       initialTool: 'select',
-//       persistence,
-//       initialCanvasState,
-//       state: (): CanvasManagerState => ({
-//         selection: []
-//       })
-//     })
-//   }
-// }

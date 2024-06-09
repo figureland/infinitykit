@@ -1,17 +1,22 @@
+import { system } from '@figureland/statekit'
 import type { InfinityKit } from '../InfinityKit'
 import type { Tool } from './Tool'
 
-export const moveTool: Tool<InfinityKit> = () => {
+export const moveTool = <I extends InfinityKit>(): Tool<I> => {
+  const { dispose } = system()
+
   return {
-    name: 'move',
-    title: 'Move',
-    icon: 'move',
-    command: 'h',
-    onPointerDown: (kit, p) => {},
-    onPointerMove: (kit, p) => {},
-    onPointerUp: (kit, p) => {},
-    onWheel: (kit, p) => {},
-    onSelect: (kit) => {},
-    onDeselect: (kit) => {}
+    dispose,
+    meta: {
+      title: 'Move',
+      icon: 'move',
+      command: 'h'
+    },
+    onPointerDown: async (kit, p) => {},
+    onPointerMove: async (kit, p) => {},
+    onPointerUp: async (kit, p) => {},
+    onWheel: async (kit, p) => {},
+    onSelect: async (kit) => {},
+    onDeselect: async (kit) => {}
   }
 }

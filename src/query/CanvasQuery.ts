@@ -5,7 +5,9 @@ import { entries } from '@figureland/typekit/object'
 import { arraysEquals } from '@figureland/typekit/equals'
 import type { QueryParams, Query, QueryAPI, QueryIdentifier } from './query-api'
 
-export class CanvasQuery<ID extends string, Item> implements QueryAPI<ID, Item> {
+export class CanvasQuery<ID extends string = string, Item extends any = any>
+  implements QueryAPI<ID, Item>
+{
   private readonly system = system()
   private readonly entityMap: Map<ID, Item> = new Map()
   private readonly queryQueue: Map<QueryIdentifier, Query<ID, Item>> = new Map()
