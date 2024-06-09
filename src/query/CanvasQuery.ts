@@ -3,7 +3,14 @@ import { type Signal, createEvents, effect, signal, system } from '@figureland/s
 import { isAsyncGeneratorFunction, isNotNullish } from '@figureland/typekit/guards'
 import { entries } from '@figureland/typekit/object'
 import { arraysEquals } from '@figureland/typekit/equals'
-import type { QueryParams, Query, QueryAPI, QueryIdentifier } from './query-api'
+import {
+  type QueryParams,
+  type Query,
+  type QueryAPI,
+  type QueryIdentifier,
+  type QueryResult,
+  createQueryResult
+} from './query-api'
 
 export class CanvasQuery<ID extends string = string, Item extends any = any>
   implements QueryAPI<ID, Item>
@@ -11,7 +18,7 @@ export class CanvasQuery<ID extends string = string, Item extends any = any>
   private readonly system = system()
   private readonly entityMap: Map<ID, Item> = new Map()
   private readonly queryQueue: Map<QueryIdentifier, Query<ID, Item>> = new Map()
-  public readonly queue = this.system.use(createEvents<Record<QueryIdentifier, ID[]>>())
+  public readonly queue = this.system.use(createEvents<Record<QueryIdentifier, QueryResult<ID>>>())
   public readonly data = this.system.use(createEvents<Record<ID, Item>>())
   public readonly processing = this.system.use(signal(() => false))
   public readonly ids = this.system.use(
@@ -21,7 +28,9 @@ export class CanvasQuery<ID extends string = string, Item extends any = any>
   )
 
   constructor() {
-    this.data.all(() => this.ids.set(Array.from(this.entityMap.keys())))
+    this.data.all(() => {
+      this.ids.set(Array.from(this.entityMap.keys()))
+    })
   }
 
   public add = (id: ID, item: Item): void => {
@@ -53,19 +62,22 @@ export class CanvasQuery<ID extends string = string, Item extends any = any>
 
   public on = this.queue.on
 
-  public search = (queryID: QueryIdentifier, params: QueryParams<ID, Item> = {}): Promise<ID[]> =>
+  public search = (
+    queryID: QueryIdentifier,
+    params: QueryParams<ID, Item> = {}
+  ): Promise<QueryResult<ID>> =>
     new Promise((resolve) => {
       const existingQuery = this.queryQueue.get(queryID)
 
       if (existingQuery) {
         existingQuery.resolve = resolve
         existingQuery.params = params
-        existingQuery.result = []
+        existingQuery.result = createQueryResult()
       } else {
         this.queryQueue.set(queryID, {
           queryID,
           params,
-          result: [],
+          result: createQueryResult(),
           resolve
         })
       }
@@ -84,13 +96,23 @@ export class CanvasQuery<ID extends string = string, Item extends any = any>
 
       for (const [id, entity] of this.entityMap.entries()) {
         for (const query of queries) {
-          const withinTarget =
-            query.params.target && isBox(entity) ? intersects(entity, query.params.target) : true
+          if (!isBox(entity)) {
+            continue
+          }
           const matchesID = query.params.ids ? query.params.ids.includes(id) : true
           const matchesFilter = query.params.filter ? query.params.filter(entity) : true
 
-          if (withinTarget && matchesID && matchesFilter) {
-            query.result.push(id)
+          if (!(matchesID && matchesFilter)) {
+            continue
+          }
+          const withinBox = query.params.box ? intersects(entity, query.params.box) : true
+          const withinPoint = query.params.point ? intersects(entity, query.params.point) : true
+
+          if (withinBox) {
+            query.result.box.push(id)
+          }
+          if (withinPoint) {
+            query.result.point.push(id)
           }
         }
       }
@@ -110,9 +132,14 @@ export class CanvasQuery<ID extends string = string, Item extends any = any>
   public signalQuery = <Query extends QueryParams<ID, Item>>(
     id: QueryIdentifier,
     box: Signal<Query>
-  ): Signal<ID[]> =>
+  ): Signal<QueryResult<ID>> =>
     this.system.unique(id, () => {
-      const visible = this.system.use(signal<ID[]>(() => [], { equality: arraysEquals }))
+      console.log(typeof id)
+      const visible = this.system.use(
+        signal<QueryResult<ID>>(createQueryResult, {
+          equality: (a, b) => arraysEquals(a.box, b.box) && arraysEquals(a.point, b.point)
+        })
+      )
 
       const onChange = async (params: Query) => {
         const visibleItems = await this.search(id, params)
@@ -120,7 +147,7 @@ export class CanvasQuery<ID extends string = string, Item extends any = any>
       }
 
       effect(
-        [box, this.ids],
+        [box],
         ([target]) => {
           onChange(target)
         },

@@ -1,4 +1,10 @@
-export { staticCanvasStyle, getCanvasStyle, boxStyle, getGridSVGPattern } from './utils/style'
+export {
+  staticCanvasStyle,
+  getCanvasStyle,
+  boxStyle,
+  getSVGBackgroundPattern,
+  type SVGBackgroundPattern
+} from './utils/style'
 export * from './utils/layout'
 
 export * from './utils/geometry'
@@ -19,7 +25,8 @@ export type {
   QueryParams,
   QueryAPI,
   InferQueryID,
-  InferQueryItem
+  InferQueryItem,
+  QueryResult
 } from './query/query-api'
 
 // Canvas
@@ -32,5 +39,5 @@ export {
 } from './interaction-handler'
 
 // Tools
-export { defaultTools, type DefaultTools } from './default-tools'
+export { defaultToolset } from './default-tools'
 export type { Tool } from './tools/Tool'

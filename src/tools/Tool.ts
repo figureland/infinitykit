@@ -1,8 +1,8 @@
 import type { Disposable } from '@figureland/statekit'
 import type { PointerState } from '@figureland/toolkit'
-import { InfinityKit } from '../InfinityKit'
+import type { InfinityKit } from '../InfinityKit'
 
-export type Tool<C extends InfinityKit> = Disposable & {
+export type Tool<C extends InfinityKit<string, any> = InfinityKit<string, any>> = Disposable & {
   meta: {
     title: string
     command?: string
@@ -17,6 +17,6 @@ export type Tool<C extends InfinityKit> = Disposable & {
   onWheel?(c: C, p: PointerState): Promise<void>
 }
 
-export type Toolset<C extends InfinityKit> = {
+export type Toolset<C extends InfinityKit<string, any> = InfinityKit<string, any>> = {
   [key: string]: Tool<C>
 }

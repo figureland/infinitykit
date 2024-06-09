@@ -6,7 +6,7 @@ import type { Box } from '@figureland/mathkit/box'
 export const boxStyle = (box: Box, inset: number = 0) =>
   `width: ${box.width - inset}px; height: ${box.height - inset}px; transform: ${transform([1, 0, 0, 1, box.x + inset / 2, box.y + inset / 2])}`
 
-export const getGridSVGPattern = (matrix: Matrix2D, size: number) => {
+export const getSVGBackgroundPattern = (matrix: Matrix2D, size: number): SVGBackgroundPattern => {
   const patternTransform = transform(matrix)
 
   return {
@@ -16,6 +16,14 @@ export const getGridSVGPattern = (matrix: Matrix2D, size: number) => {
     patternUnits: 'userSpaceOnUse',
     opacity: mapRange(getScale(matrix), 0.5, 1, 0.1, 0.5)
   }
+}
+
+export type SVGBackgroundPattern = {
+  width: number
+  height: number
+  patternTransform: string
+  patternUnits: string
+  opacity: number
 }
 
 const TRANSFORM_NAME = 'infinitykit-transform'

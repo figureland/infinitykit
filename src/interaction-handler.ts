@@ -1,5 +1,5 @@
 import { vector2 } from '@figureland/mathkit/vector2'
-import { system, type Disposable } from '@figureland/statekit'
+import { effect, system, type Disposable } from '@figureland/statekit'
 import type { Pointer, PointerInteractionEvent } from '@figureland/toolkit/pointer'
 import { createListener } from '@figureland/toolkit/dom'
 import { isString } from '@figureland/typekit/guards'
@@ -12,12 +12,17 @@ const getDataAttribute = (element: HTMLElement, propertyName: string): string | 
   return isString(dataValue) ? dataValue : null
 }
 
-export const createInteractionHandler = <P extends Pointer>(
+export const createInteractionHandler = <P extends Pointer, IK extends InfinityKit<any, any>>(
   pointer: P,
-  kit: InfinityKit
+  kit: IK
 ): CanvasInteractionHandler => {
   const { use, dispose } = system()
-  use(pointer.key('point').on(() => kit.onPointerMove(pointer.get())))
+  use(
+    effect([pointer.key('point'), kit.canvas.transform], () => {
+      kit.onPointerMove(pointer.get())
+    })
+  )
+  // use(pointer.key('point').on(() => kit.onPointerMove(pointer.get())))
 
   return {
     onPointerDown: (e: PointerInteractionEvent) => {
@@ -39,8 +44,6 @@ export const createInteractionHandler = <P extends Pointer>(
       kit.onBlur()
     },
     onFocusIn: (e: FocusEvent) => {
-      // e.preventDefault()
-      // console.log(e)/
       if (isHTMLElement(e.target)) {
         const selectedEntity = getDataAttribute(e.target, 'entity')
         console.log('select', selectedEntity)

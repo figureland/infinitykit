@@ -1,11 +1,12 @@
-import { type Signal, signal, Manager, type ReadonlySignal } from '@figureland/statekit'
+import { type Signal, signal, Manager } from '@figureland/statekit'
 import { values } from '@figureland/typekit/object'
 import type { PointerState } from '@figureland/toolkit'
 import { box, type Box, type Vector2 } from '@figureland/mathkit/box'
 import { type CanvasOptions, Canvas } from './Canvas'
 import type { PersistenceName } from '@figureland/statekit/typed-local-storage'
-import type { InferQueryID, QueryAPI } from './query/query-api'
-import { defaultTools, type DefaultToolset } from './default-tools'
+import type { QueryAPI, QueryResult } from './query/query-api'
+import { defaultToolset } from './default-tools'
+import { getSVGBackgroundPattern, type SVGBackgroundPattern } from './utils/style'
 
 export type IKActionType = {
   type: string
@@ -39,18 +40,28 @@ export type IKActions =
     }
 
 export type IKState<ID extends string = string> = {
+  selecting: boolean
   focus: boolean
+  hover?: ID
   selection: ID[]
   brush: Box
 }
 
-export class InfinityKit<API extends QueryAPI = QueryAPI> extends Manager {
+const toolset = defaultToolset()
+
+type DefaultToolset = typeof toolset
+
+export class InfinityKit<
+  ID extends string,
+  Item extends any,
+  API extends QueryAPI<ID, Item> = QueryAPI<ID, Item>
+> extends Manager {
   public readonly canvas: Canvas
   public tools: Signal<DefaultToolset>
   public tool: Signal<keyof DefaultToolset>
   public state: Signal<IKState>
-  public visible: Signal<InferQueryID<API>[]>
-  public selection: Signal<InferQueryID<API>[]>
+  public visible: Signal<QueryResult<ID>>
+  public backgroundPattern: Signal<SVGBackgroundPattern>
 
   constructor(
     public api: API,
@@ -64,7 +75,7 @@ export class InfinityKit<API extends QueryAPI = QueryAPI> extends Manager {
   ) {
     super()
     this.tool = this.use(signal<keyof DefaultToolset>(() => 'select'))
-    this.tools = this.use(signal(() => defaultTools))
+    this.tools = this.use(signal(defaultToolset))
     this.use(() => {
       values(this.tools.get()).forEach((tool) => {
         tool.dispose()
@@ -73,6 +84,7 @@ export class InfinityKit<API extends QueryAPI = QueryAPI> extends Manager {
 
     this.state = this.use(
       signal<IKState>(() => ({
+        selecting: false,
         brush: box(),
         focus: false,
         selection: []
@@ -89,17 +101,14 @@ export class InfinityKit<API extends QueryAPI = QueryAPI> extends Manager {
       api.signalQuery(
         Symbol(),
         signal((get) => ({
-          target: get(this.canvas.canvasViewport)
+          box: get(this.canvas.canvasViewport)
         }))
       )
-    )
+    ) as Signal<QueryResult<ID>>
 
-    this.selection = this.use(
-      api.signalQuery(
-        Symbol(),
-        signal((get) => ({
-          target: get(this.state).brush
-        }))
+    this.backgroundPattern = this.use(
+      signal((get) =>
+        getSVGBackgroundPattern(get(this.canvas.transform), get(this.canvas.options).grid)
       )
     )
   }
@@ -132,45 +141,45 @@ export class InfinityKit<API extends QueryAPI = QueryAPI> extends Manager {
   }
 
   public onPointerDown = (p: PointerState) => {
-    const action = this.getActiveTool().onPointerDown?.(this, p)
+    this.state.set({
+      focus: true
+    })
+    this.getActiveTool().onPointerDown?.(this, p)
     // if (action) {
     //   this.handleToolAction(action)
     // }
   }
 
   public onPointerMove = (p: PointerState) => {
-    if (!this.state.get().focus) {
-      return
-    }
-    const action = this.getActiveTool().onPointerMove?.(this, p)
+    this.getActiveTool().onPointerMove?.(this, p)
     // if (action) {
     //   this.handleToolAction(action)
     // }
   }
 
   public onPointerUp = (p: PointerState) => {
-    const action = this.getActiveTool().onPointerUp?.(this, p)
+    this.getActiveTool().onPointerUp?.(this, p)
     // if (action) {
     //   this.handleToolAction(action)
     // }
   }
 
   public onWheel = (p: PointerState) => {
-    const action = this.getActiveTool().onWheel?.(this, p)
+    this.getActiveTool().onWheel?.(this, p)
     // if (action) {
     //   this.handleToolAction(action)
     // }
   }
 
   public onSelect = () => {
-    const action = this.getActiveTool().onSelect?.(this)
+    this.getActiveTool().onSelect?.(this)
     // if (action) {
     //   this.handleToolAction(action)
     // }
   }
 
   public onDeselect = () => {
-    const action = this.getActiveTool().onDeselect?.(this)
+    this.getActiveTool().onDeselect?.(this)
     // if (action) {
     //   this.handleToolAction(action)
     // }

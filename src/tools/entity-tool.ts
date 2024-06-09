@@ -2,7 +2,7 @@ import { system } from '@figureland/statekit'
 import type { InfinityKit } from '../InfinityKit'
 import type { Tool } from './Tool'
 
-export const entityTool = <I extends InfinityKit>(): Tool<I> => {
+export const entityTool = (): Tool => {
   const { dispose } = system()
 
   return {
